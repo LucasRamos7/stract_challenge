@@ -1,6 +1,6 @@
 from flask import Flask
 
-from methods import get_ads_by_platform
+from methods import get_ads_by_platform, get_ads_by_platform_summary
 
 
 app = Flask(__name__)
@@ -13,13 +13,14 @@ def presentation() -> str:
             'LinkedIn: https://www.linkedin.com/in/lucas-ramos-959116203/')
 
 
-@app.route('/<plataforma>')
-def get_ads(plataforma):
-    return get_ads_by_platform(plataforma)
-'''
-app.route(/{{plataforma}})
-Retorna os anúncios veiculados na referida plataforma, com todos os insights e o nome da conta que o veiculou
-'''
+@app.route('/<platform>')
+def get_ads(platform):
+    return get_ads_by_platform(platform)
+
+
+@app.route('/<platform>/resumo')
+def get_ads_summary(platform):
+    return get_ads_by_platform_summary(platform)
 
 
 '''
