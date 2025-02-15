@@ -39,4 +39,5 @@ def get_ads():
 
 @app.route('/geral/resumo')
 def get_ads_summary():
-    return get_all_ads_summary()
+    data = get_all_ads_summary()
+    return excel.make_response_from_array(data, 'csv')

@@ -82,23 +82,35 @@ def get_all_ads() -> List[dict]:
     return all_ads
 
 
-def get_all_ads_summary() -> List[dict]:
+def get_all_ads_summary() -> List[list]:
     platforms = get_platforms()
     all_ads = []
+    platform_summaries = []
+    headers = ['Platform'] + [field.name for field in get_fields_by_platform('meta_ads')]
     for platform in platforms.keys():
+        platform_summaries.append([platforms[platform]])
         ads = get_ads_by_platform_summary(platform)
         fields_sum = {}
-        for field in ads[0].keys():
+        for field in headers[1:]:
             try:
-                float(ads[0][field])
-                fields_sum[field] = sum([ad[field] for ad in ads])
-            except ValueError:
+                # breakpoint()
+                float(ads[1][ads[0].index(field)])
+                fields_sum[field] = sum([ad[ads[0].index(field)] for ad in ads[1:]])
+                if field == 'Cost Per Click':
+                    fields_sum[field] = round(fields_sum[field], 3)
+            except TypeError:
+                breakpoint()
+            except (ValueError, KeyError):
                 fields_sum[field] = ''
 
-        fields_sum['Platform'] = platforms[platform]
-        fields_sum['id'] = ''
-        fields_sum['Cost Per Click'] = round(fields_sum['Cost Per Click'], 3)
+            platform_summaries[-1].append(fields_sum[field])
 
-        all_ads.append(fields_sum)
+    platform_summaries.insert(0, headers)
 
-    return all_ads
+        # fields_sum['Platform'] = platforms[platform]
+        # fields_sum['id'] = ''
+        # fields_sum['Cost Per Click'] = round(fields_sum['Cost Per Click'], 3)
+
+        # all_ads.append(fields_sum)
+
+    return platform_summaries
