@@ -7,10 +7,12 @@ app = Flask(__name__)
 
 
 @app.route('/')
-def presentation() -> str:
-    return ('Nome: Lucas de Souza Oliveira Ramos'
-            'E-mail: lucassouzaramos7@gmail.com'
-            'LinkedIn: https://www.linkedin.com/in/lucas-ramos-959116203/')
+def presentation() -> dict:
+    return {
+        'Nome': 'Lucas de Souza Oliveira Ramos',
+        'E-mail': 'lucassouzaramos7@gmail.com',
+        'LinkedIn': 'https://www.linkedin.com/in/lucas-ramos-959116203/'
+    }
 
 
 @app.route('/<platform>')
