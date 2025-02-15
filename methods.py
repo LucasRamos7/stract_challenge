@@ -105,6 +105,10 @@ def get_ads_by_platform_summary(platform: str) -> List[dict]:
         res = res.json()
 
         insights = res['insights']
+        if platform == 'ga4':
+            fields.append(('Cost Per Click', 'cpc'))
+            for insight in insights:
+                insight['cpc'] = round(insight['cost'] / insight['clicks'], 3)
         fields_sum = {}
         for field in fields:
             try:
@@ -125,7 +129,29 @@ def get_ads_by_platform_summary(platform: str) -> List[dict]:
 def get_all_ads() -> List[dict]:
     platforms = get_platforms()
     all_ads = []
-    for platform in platforms:
+    for platform in platforms.keys():
         all_ads += get_ads_by_platform(platform)
+
+    return all_ads
+
+
+def get_all_ads_summary() -> List[dict]:
+    platforms = get_platforms()
+    all_ads = []
+    for platform in platforms.keys():
+        ads = get_ads_by_platform_summary(platform)
+        fields_sum = {}
+        for field in ads[0].keys():
+            try:
+                float(ads[0][field])
+                fields_sum[field] = sum([ad[field] for ad in ads])
+            except ValueError:
+                fields_sum[field] = ''
+
+        fields_sum['Platform'] = platforms[platform]
+        fields_sum['id'] = ''
+        fields_sum['Cost Per Click'] = round(fields_sum['Cost Per Click'], 3)
+
+        all_ads.append(fields_sum)
 
     return all_ads

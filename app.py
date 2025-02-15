@@ -1,6 +1,6 @@
 from flask import Flask
 
-from methods import get_ads_by_platform, get_ads_by_platform_summary, get_all_ads
+from methods import get_ads_by_platform, get_ads_by_platform_summary, get_all_ads, get_all_ads_summary
 
 
 app = Flask(__name__)
@@ -28,13 +28,6 @@ def get_ads():
     return get_all_ads()
 
 
-'''
-app.route(/{{plataforma/resumo}})
-Tabela similar, somando os campos numéricos e retornando vazios os campos de texto, exceto o nome da conta
-
-app.route(/geral)
-Retorna todos os anúncios de todas as plataformas, com colunas para identificar por nome a plataforma
-
-app.route(/geral/resumo)
-Similar a plataforma/resumo
-'''
+@app.route('/geral/resumo')
+def get_ads_summary():
+    return get_all_ads_summary()
