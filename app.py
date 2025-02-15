@@ -33,7 +33,8 @@ def get_account_ads_summary(platform):
 
 @app.route('/geral')
 def get_ads():
-    return get_all_ads()
+    data = get_all_ads()
+    return excel.make_response_from_array(data, 'csv')
 
 
 @app.route('/geral/resumo')
