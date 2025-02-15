@@ -15,12 +15,12 @@ def presentation() -> dict:
     }
 
 
-@app.route('/<platform>')
+@app.route('/<string:platform>')
 def get_account_ads(platform):
     return get_ads_by_platform(platform)
 
 
-@app.route('/<platform>/resumo')
+@app.route('/<string:platform>/resumo')
 def get_account_ads_summary(platform):
     return get_ads_by_platform_summary(platform)
 
