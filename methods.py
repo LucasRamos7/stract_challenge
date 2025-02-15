@@ -1,6 +1,7 @@
 import requests
 import json
 from typing import List
+from collections import namedtuple
 
 
 BASE_URL = 'https://sidebar.stract.to/api'
@@ -8,6 +9,8 @@ BASE_URL = 'https://sidebar.stract.to/api'
 with open('secrets.json', 'r') as f:
     token = json.load(f)['TOKEN']
 headers = {f'Authorization': f'Bearer {token}'}
+
+Field = namedtuple('Field', ['field_name', 'field_tag'])
 
 
 def get_accounts_by_platform(platform: str) -> List[dict]:
@@ -31,14 +34,14 @@ def get_accounts_by_platform(platform: str) -> List[dict]:
     return accounts
 
 
-def get_fields_by_platform(platform: str) -> List[tuple]:
+def get_fields_by_platform(platform: str) -> List[namedtuple]:
     fields = []
 
     res = requests.get(f'{BASE_URL}/fields?platform={platform}', headers=headers)
     res = res.json()
 
     for field in res['fields']:
-        fields.append((field['text'], field['value']))
+        fields.append(Field(field['text'], field['value']))
     if 'pagination' in res:
         last_page = res['pagination']['total']
         if last_page > 1:
@@ -47,7 +50,7 @@ def get_fields_by_platform(platform: str) -> List[tuple]:
                 res = res.json()
 
                 for field in res['fields']:
-                    fields.append((field['text'], field['value']))
+                    fields.append(Field(field['text'], field['value']))
 
     return fields
 
@@ -64,7 +67,7 @@ def get_ads_by_platform(platform: str) -> List[dict]:
     accounts = get_accounts_by_platform(platform)
     fields = get_fields_by_platform(platform)
     platform_name = get_platforms()[platform]
-    request_fields = ','.join([field[1] for field in fields])
+    request_fields = ','.join([field.field_tag for field in fields])
     insights = []
 
     for account in accounts:
@@ -81,7 +84,7 @@ def get_ads_by_platform(platform: str) -> List[dict]:
                 'Name': account['name']
             })
             for field in fields:
-                insights[-1][field[0]] = insight[field[1]]
+                insights[-1][field.field_name] = insight[field.field_tag]
 
             if platform == 'ga4':
                 insights[-1]['Costs Per Click'] = round(insights[-1]['Spend'] / insights[-1]['Clicks'], 3)
@@ -93,7 +96,7 @@ def get_ads_by_platform_summary(platform: str) -> List[dict]:
     accounts = get_accounts_by_platform(platform)
     fields = get_fields_by_platform(platform)
     platform_name = get_platforms()[platform]
-    request_fields = ','.join([field[1] for field in fields])
+    request_fields = ','.join([field.field_tag for field in fields])
     account_summaries = []
 
     for account in accounts:
@@ -106,16 +109,16 @@ def get_ads_by_platform_summary(platform: str) -> List[dict]:
 
         insights = res['insights']
         if platform == 'ga4':
-            fields.append(('Cost Per Click', 'cpc'))
+            fields.append(Field('Cost Per Click', 'cpc'))
             for insight in insights:
                 insight['cpc'] = round(insight['cost'] / insight['clicks'], 3)
         fields_sum = {}
         for field in fields:
             try:
-                float(insights[0][field[1]])
-                fields_sum[field[0]] = sum([ad[field[1]] for ad in insights])
+                float(insights[0][field.field_tag])
+                fields_sum[field.field_name] = sum([ad[field.field_tag] for ad in insights])
             except ValueError:
-                fields_sum[field[0]] = ''
+                fields_sum[field.field_name] = ''
 
         fields_sum['id'] = ''
         fields_sum['Name'] = account['name']
