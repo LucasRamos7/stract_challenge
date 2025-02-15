@@ -18,14 +18,15 @@ def get_accounts_by_platform(platform: str) -> List[dict]:
     for account in res['accounts']:
         accounts.append(account)
 
-    last_page = res['pagination']['total']
-    if last_page > 1:
-        for page in range(2, last_page + 1):
-            res = requests.get(f'{BASE_URL}/accounts?platform={platform}&page={page}', headers=headers)
-            res = res.json()
+    if 'pagination' in res:
+        last_page = res['pagination']['total']
+        if last_page > 1:
+            for page in range(2, last_page + 1):
+                res = requests.get(f'{BASE_URL}/accounts?platform={platform}&page={page}', headers=headers)
+                res = res.json()
 
-            for account in res['accounts']:
-                accounts.append(account)
+                for account in res['accounts']:
+                    accounts.append(account)
 
     return accounts
 
@@ -38,31 +39,31 @@ def get_fields_by_platform(platform: str) -> List[tuple]:
 
     for field in res['fields']:
         fields.append((field['text'], field['value']))
+    if 'pagination' in res:
+        last_page = res['pagination']['total']
+        if last_page > 1:
+            for page in range(2, last_page + 1):
+                res = requests.get(f'{BASE_URL}/fields?platform={platform}&page={page}', headers=headers)
+                res = res.json()
 
-    last_page = res['pagination']['total']
-    if last_page > 1:
-        for page in range(2, last_page + 1):
-            res = requests.get(f'{BASE_URL}/fields?platform={platform}&page={page}', headers=headers)
-            res = res.json()
-
-            for field in res['fields']:
-                fields.append((field['text'], field['value']))
+                for field in res['fields']:
+                    fields.append((field['text'], field['value']))
 
     return fields
 
 
-def get_platform_name(platform: str) -> str:
+def get_platforms():
     res = requests.get(f'{BASE_URL}/platforms', headers=headers)
     res = res.json()
     platforms = {platform['value']: platform['text'] for platform in res['platforms']}
 
-    return platforms[platform]
+    return platforms
 
 
 def get_ads_by_platform(platform: str) -> List[dict]:
     accounts = get_accounts_by_platform(platform)
     fields = get_fields_by_platform(platform)
-    platform_name = get_platform_name(platform)
+    platform_name = get_platforms()[platform]
     request_fields = ','.join([field[1] for field in fields])
     insights = []
 
@@ -82,13 +83,16 @@ def get_ads_by_platform(platform: str) -> List[dict]:
             for field in fields:
                 insights[-1][field[0]] = insight[field[1]]
 
+            if platform == 'ga4':
+                insights[-1]['Costs Per Click'] = round(insights[-1]['Spend'] / insights[-1]['Clicks'], 3)
+
     return insights
 
 
 def get_ads_by_platform_summary(platform: str) -> List[dict]:
     accounts = get_accounts_by_platform(platform)
     fields = get_fields_by_platform(platform)
-    platform_name = get_platform_name(platform)
+    platform_name = get_platforms()[platform]
     request_fields = ','.join([field[1] for field in fields])
     account_summaries = []
 
@@ -116,3 +120,12 @@ def get_ads_by_platform_summary(platform: str) -> List[dict]:
         account_summaries.append(fields_sum)
 
     return account_summaries
+
+
+def get_all_ads() -> List[dict]:
+    platforms = get_platforms()
+    all_ads = []
+    for platform in platforms:
+        all_ads += get_ads_by_platform(platform)
+
+    return all_ads

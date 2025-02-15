@@ -1,6 +1,6 @@
 from flask import Flask
 
-from methods import get_ads_by_platform, get_ads_by_platform_summary
+from methods import get_ads_by_platform, get_ads_by_platform_summary, get_all_ads
 
 
 app = Flask(__name__)
@@ -14,13 +14,18 @@ def presentation() -> str:
 
 
 @app.route('/<platform>')
-def get_ads(platform):
+def get_account_ads(platform):
     return get_ads_by_platform(platform)
 
 
 @app.route('/<platform>/resumo')
-def get_ads_summary(platform):
+def get_account_ads_summary(platform):
     return get_ads_by_platform_summary(platform)
+
+
+@app.route('/geral')
+def get_ads():
+    return get_all_ads()
 
 
 '''
