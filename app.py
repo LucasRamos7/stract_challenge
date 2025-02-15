@@ -1,9 +1,13 @@
 from flask import Flask
+import flask_excel as excel
 
 from methods import get_ads_by_platform, get_ads_by_platform_summary, get_all_ads, get_all_ads_summary
 
 
 app = Flask(__name__)
+
+
+excel.init_excel(app)
 
 
 @app.route('/')
@@ -17,7 +21,8 @@ def presentation() -> dict:
 
 @app.route('/<string:platform>')
 def get_account_ads(platform):
-    return get_ads_by_platform(platform)
+    data = get_ads_by_platform(platform)
+    return excel.make_response_from_array(data, 'csv')
 
 
 @app.route('/<string:platform>/resumo')
