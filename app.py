@@ -27,7 +27,8 @@ def get_account_ads(platform):
 
 @app.route('/<string:platform>/resumo')
 def get_account_ads_summary(platform):
-    return get_ads_by_platform_summary(platform)
+    data = get_ads_by_platform_summary(platform)
+    return excel.make_response_from_array(data, 'csv')
 
 
 @app.route('/geral')

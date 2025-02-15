@@ -23,7 +23,6 @@ def get_ads_by_platform(platform: str) -> List[list]:
             for field in fields:
                 account_insights[-1].append(insight[field.tag])
             if platform == 'ga4':
-
                 account_insights[-1].append(
                     round(account_insights[-1][headers.index('Spend')] /
                           account_insights[-1][headers.index('Clicks')], 3)
@@ -33,14 +32,19 @@ def get_ads_by_platform(platform: str) -> List[list]:
     return account_insights
 
 
-def get_ads_by_platform_summary(platform: str) -> List[dict]:
+def get_ads_by_platform_summary(platform: str) -> List[list]:
     accounts = get_accounts_by_platform(platform)
     fields = get_fields_by_platform(platform)
     platform_name = get_platforms()[platform]
     request_fields = ','.join([field.tag for field in fields])
     account_summaries = []
 
+    headers = ['Platform', 'Name'] + [field.name for field in fields]
+    if platform == 'ga4':
+        headers.append('Cost Per Click')
+
     for account in accounts:
+        account_summaries.append([platform_name, account['name']])
         insights = get_account_insights(platform, account['id'], account['token'], request_fields)
 
         if platform == 'ga4':
@@ -55,11 +59,16 @@ def get_ads_by_platform_summary(platform: str) -> List[dict]:
             except ValueError:
                 fields_sum[field.name] = ''
 
-        fields_sum['id'] = ''
-        fields_sum['Name'] = account['name']
-        fields_sum['Platform'] = platform_name
+            account_summaries[-1].append(fields_sum[field.name])
 
-        account_summaries.append(fields_sum)
+    account_summaries.insert(0, headers)
+        # fields_sum['id'] = ''
+        # fields_sum['Name'] = account['name']
+        # fields_sum['Platform'] = platform_name
+
+        # account_summaries.append(fields_sum)
+
+
 
     return account_summaries
 
