@@ -10,7 +10,7 @@ with open('secrets.json', 'r') as f:
 headers = {f'Authorization': f'Bearer {token}'}
 
 
-Field = namedtuple('Field', ['field_name', 'field_tag'])
+Field = namedtuple('Field', ['name', 'tag'])
 
 
 def get_accounts_by_platform(platform: str) -> List[dict]:

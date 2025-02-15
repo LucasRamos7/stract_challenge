@@ -4,27 +4,32 @@ from collections import namedtuple
 from stract_api import Field, get_accounts_by_platform, get_fields_by_platform, get_platforms, get_account_insights
 
 
-def get_ads_by_platform(platform: str) -> List[dict]:
+def get_ads_by_platform(platform: str) -> List[list]:
     accounts = get_accounts_by_platform(platform)
     fields = get_fields_by_platform(platform)
     platform_name = get_platforms()[platform]
-    request_fields = ','.join([field.field_tag for field in fields])
+    request_fields = ','.join([field.tag for field in fields])
     account_insights = []
+
+    headers = ['Platform', 'Name'] + [field.name for field in fields]
+    if platform == 'ga4':
+        headers.append('Cost Per Click')
 
     for account in accounts:
         insights = get_account_insights(platform, account['id'], account['token'], request_fields)
 
         for insight in insights:
-            account_insights.append({
-                'Platform': platform_name,
-                'Name': account['name']
-            })
+            account_insights.append([platform_name, account['name']])
             for field in fields:
-                account_insights[-1][field.field_name] = insight[field.field_tag]
-
+                account_insights[-1].append(insight[field.tag])
             if platform == 'ga4':
-                account_insights[-1]['Costs Per Click'] = round(account_insights[-1]['Spend'] / account_insights[-1]['Clicks'], 3)
 
+                account_insights[-1].append(
+                    round(account_insights[-1][headers.index('Spend')] /
+                          account_insights[-1][headers.index('Clicks')], 3)
+                )
+
+    account_insights.insert(0, headers)
     return account_insights
 
 
@@ -32,7 +37,7 @@ def get_ads_by_platform_summary(platform: str) -> List[dict]:
     accounts = get_accounts_by_platform(platform)
     fields = get_fields_by_platform(platform)
     platform_name = get_platforms()[platform]
-    request_fields = ','.join([field.field_tag for field in fields])
+    request_fields = ','.join([field.tag for field in fields])
     account_summaries = []
 
     for account in accounts:
@@ -45,10 +50,10 @@ def get_ads_by_platform_summary(platform: str) -> List[dict]:
         fields_sum = {}
         for field in fields:
             try:
-                float(insights[0][field.field_tag])
-                fields_sum[field.field_name] = sum([ad[field.field_tag] for ad in insights])
+                float(insights[0][field.tag])
+                fields_sum[field.name] = sum([ad[field.tag] for ad in insights])
             except ValueError:
-                fields_sum[field.field_name] = ''
+                fields_sum[field.name] = ''
 
         fields_sum['id'] = ''
         fields_sum['Name'] = account['name']
