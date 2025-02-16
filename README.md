@@ -33,7 +33,7 @@ O arquivo secrets.json contém o token de acesso da API da Stract, e deve se loc
 
 `{
 
-  "TOKEN": "<API TOKEN>"
+  "TOKEN": "API TOKEN"
 
 }`
 
